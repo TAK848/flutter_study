@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 void main() {
   runApp(const MyApp());
@@ -49,6 +50,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  String _type = '偶数';
 
   void _incrementCounter() {
     setState(() {
@@ -58,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+      _type = _counter % 2 == 0 ? '偶数' : '奇数';
     });
   }
 
@@ -73,43 +76,108 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      body: Column(
-        children: [
-          Container(
-            child: const Text('HelloWorld'),
-            padding: EdgeInsets.all(20),
-          ),
-          const Text("ハローワールド"),
-          const Text("HelloWorld"),
-          const Text("ハローワールド"),
-          TextButton(
-            onPressed: () => {print('pushed')},
-            child: const Text('ボタン'),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: const [
-              Icon(
-                Icons.favorite,
-                color: Colors.pink,
-                size: 300.0,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Container(
+              child: const Text('HelloWorld'),
+              padding: EdgeInsets.all(20),
+            ),
+            Text("$_counterハローワールド"),
+            const Text("HelloWorld"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            const Text("ハローワールド"),
+            TextButton(
+              onPressed: () => {print('pushed')},
+              child: const Text('ボタン'),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: const [
+                Icon(
+                  Icons.favorite,
+                  color: Colors.pink,
+                  size: 30.0,
+                ),
+                Icon(
+                  Icons.audiotrack,
+                  color: Colors.green,
+                  size: 30.0,
+                ),
+                Icon(
+                  Icons.beach_access,
+                  color: Colors.blue,
+                  size: 30.0,
+                ),
+                Icon(
+                  FontAwesomeIcons.gift,
+                  color: Colors.blue,
+                  size: 30.0,
+                ),
+              ],
+            ),
+            if (_counter % 5 != 0)
+              Text(
+                _type,
+                style: TextStyle(
+                  fontSize: 30,
+                  color: _type == '偶数' ? Colors.green : Colors.red,
+                ),
               ),
-              Icon(
-                Icons.audiotrack,
-                color: Colors.green,
-                size: 30.0,
-              ),
-              Icon(
-                Icons.beach_access,
-                color: Colors.blue,
-                size: 300.0,
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => {print('pushed')},
+        onPressed: () {
+          print('pushed');
+          _incrementCounter();
+        },
         child: const Icon(Icons.timer),
       ),
       drawer: const Drawer(child: Center(child: Text("Drawer"))),
