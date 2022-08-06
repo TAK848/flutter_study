@@ -63,53 +63,108 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
+        title: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
+          children: const [
+            Icon(Icons.create),
+            Text("初めてのタイトル"),
           ],
         ),
       ),
+      body: Column(
+        children: [
+          Container(
+            child: const Text('HelloWorld'),
+            padding: EdgeInsets.all(20),
+          ),
+          const Text("ハローワールド"),
+          const Text("HelloWorld"),
+          const Text("ハローワールド"),
+          TextButton(
+            onPressed: () => {print('pushed')},
+            child: const Text('ボタン'),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: const [
+              Icon(
+                Icons.favorite,
+                color: Colors.pink,
+                size: 300.0,
+              ),
+              Icon(
+                Icons.audiotrack,
+                color: Colors.green,
+                size: 30.0,
+              ),
+              Icon(
+                Icons.beach_access,
+                color: Colors.blue,
+                size: 300.0,
+              ),
+            ],
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+        onPressed: () => {print('pushed')},
+        child: const Icon(Icons.timer),
+      ),
+      drawer: const Drawer(child: Center(child: Text("Drawer"))),
+      endDrawer: const Drawer(child: Center(child: Text("EndDrawer"))),
     );
   }
+  // @override
+  // Widget build(BuildContext context) {
+  //   // This method is rerun every time setState is called, for instance as done
+  //   // by the _incrementCounter method above.
+  //   //
+  //   // The Flutter framework has been optimized to make rerunning build methods
+  //   // fast, so that you can just rebuild anything that needs updating rather
+  //   // than having to individually change instances of widgets.
+  //   return Scaffold(
+  //     appBar: AppBar(
+  //       // Here we take the value from the MyHomePage object that was created by
+  //       // the App.build method, and use it to set our appbar title.
+  //       title: Text(widget.title),
+  //     ),
+  //     body: Center(
+  //       // Center is a layout widget. It takes a single child and positions it
+  //       // in the middle of the parent.
+  //       child: Column(
+  //         // Column is also a layout widget. It takes a list of children and
+  //         // arranges them vertically. By default, it sizes itself to fit its
+  //         // children horizontally, and tries to be as tall as its parent.
+  //         //
+  //         // Invoke "debug painting" (press "p" in the console, choose the
+  //         // "Toggle Debug Paint" action from the Flutter Inspector in Android
+  //         // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
+  //         // to see the wireframe for each widget.
+  //         //
+  //         // Column has various properties to control how it sizes itself and
+  //         // how it positions its children. Here we use mainAxisAlignment to
+  //         // center the children vertically; the main axis here is the vertical
+  //         // axis because Columns are vertical (the cross axis would be
+  //         // horizontal).
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: <Widget>[
+  //           const Text(
+  //             'You have pushed the button this many times:',
+  //           ),
+  //           Text(
+  //             '$_counter',
+  //             style: Theme.of(context).textTheme.headline4,
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //     floatingActionButton: FloatingActionButton(
+  //       onPressed: _incrementCounter,
+  //       tooltip: 'Increment',
+  //       child: const Icon(Icons.add),
+  //     ), // This trailing comma makes auto-formatting nicer for build methods.
+  //   );
+  // }
 }
