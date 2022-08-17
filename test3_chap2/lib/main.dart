@@ -49,6 +49,17 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   late AnimationController _animationControler;
+  late Animation<double> _animationDouble;
+  final Tween<double> _tweenDouble = Tween(
+    begin: 0.0,
+    end: 200.0,
+  );
+  late Animation<Color?> _animationColor;
+  final ColorTween _tweenColor = ColorTween(
+    begin: Colors.green,
+    end: Colors.blue,
+  );
+
   _play() async {
     setState(() {
       _animationControler.forward();
@@ -74,6 +85,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       vsync: this,
       duration: const Duration(seconds: 3),
     );
+
+    _animationDouble = _tweenDouble.animate(_animationControler);
+    _animationDouble.addListener(() {
+      setState(() {});
+    });
+    _animationColor = _tweenColor.animate(_animationControler);
+    _animationColor.addListener(() {
+      setState(() {});
+    });
   }
 
   @override
@@ -92,13 +112,18 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Text("AnimationController:${_animationControler.value}"),
+            Text("AnimationDouble:${_animationDouble.value}"),
+            Text("AnimationColor:${_animationColor.value}"),
             SizeTransition(
               sizeFactor: _animationControler,
               child: Center(
                 child: SizedBox(
-                  width: 50,
-                  height: 50,
-                  child: Container(color: Colors.green),
+                  width: _animationDouble.value,
+                  height: _animationDouble.value,
+                  child: Container(
+                    color: _animationColor.value,
+                  ),
                 ),
               ),
             ),
@@ -109,11 +134,17 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           FloatingActionButton(
-              onPressed: _play, child: const Icon(Icons.arrow_forward)),
+            onPressed: _play,
+            child: const Icon(Icons.arrow_forward),
+          ),
           FloatingActionButton(
-              onPressed: _stop, child: const Icon(Icons.pause)),
+            onPressed: _stop,
+            child: const Icon(Icons.pause),
+          ),
           FloatingActionButton(
-              onPressed: _reverse, child: const Icon(Icons.arrow_back)),
+            onPressed: _reverse,
+            child: const Icon(Icons.arrow_back),
+          ),
         ],
       ),
     );
