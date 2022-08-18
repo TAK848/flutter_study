@@ -1,8 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-import 'extensions/random_string.dart';
+import 'firebase_options.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -57,49 +59,79 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  Image? _img;
+  Text? _text;
+
+  // ダウンロード処理
+  Future<void> _download() async {
+    // ファイルのダウンロード
+    FirebaseStorage storage = FirebaseStorage.instance;
+    Reference imageRef = storage.ref().child("DL").child("flutter.png");
+    String imageUrl = await imageRef.getDownloadURL();
+    Reference textRef = storage.ref("DL/hello.txt");
+    var data = await textRef.getData();
+
+    // 画面に反映
+    setState(() {
+      _img = Image.network(imageUrl);
+      _text = Text(ascii.decode(data!));
+    });
+
+    // ローカルにもファイルを書き込み
+    Directory appDocDir = await getApplicationDocumentsDirectory();
+    File downloadToFile = File("${appDocDir.path}/download-logo.png");
+    try {
+      await imageRef.writeToFile(downloadToFile);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  // アップロード処理
+  void _upload() async {
+    // imagePickerで画像を選択する
+    final pickerFile =
+        await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickerFile == null) {
+      return;
+    }
+    File file = File(pickerFile.path);
+    FirebaseStorage storage = FirebaseStorage.instance;
+    try {
+      await storage.ref("UL/upload-pic.png").putFile(file);
+      setState(() {
+        _text = const Text("UploadDone");
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: TextButton(
-          // ボタンを押した時のイベント
-          onPressed: () async {
-            /* ここにプログラムを記載 */
-            FirebaseFirestore.instance
-                .doc('autoCollection1/autoDocument1')
-                .set({'autofield${randomString(4)}': "abc"});
-            FirebaseFirestore.instance
-                .doc('autoCollection1/autoDocument1')
-                .set({'autofield${randomString(4)}': "abc"});
-            FirebaseFirestore.instance
-                .collection('autoCollection2')
-                .add({'autofield${randomString(4)}': "xyz"});
-            FirebaseFirestore.instance
-                .collection('flutterDataCollection')
-                .doc('flutterDataDocument')
-                .get()
-                .then((ref) {
-              print(ref.get("mydata"));
-            });
-            FirebaseFirestore.instance
-                .doc('flutterDataCollection/flutterDataDocument')
-                .get()
-                .then((ref) {
-              print(ref.get("mydata"));
-            });
-            FirebaseFirestore.instance
-                .doc('autoCollection1/autoDocument1')
-                .delete();
-          },
-          child: const Text(
-            '実行',
-            style: TextStyle(fontSize: 50),
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              if (_img != null) _img!,
+              if (_text != null) _text!,
+            ],
           ),
         ),
-      ),
-    );
+        floatingActionButton:
+            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          FloatingActionButton(
+            onPressed: _download,
+            child: const Icon(Icons.download_outlined),
+          ),
+          FloatingActionButton(
+            onPressed: _upload,
+            child: const Icon(Icons.upload_outlined),
+          ),
+        ]));
   }
 }
