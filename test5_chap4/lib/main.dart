@@ -1,18 +1,41 @@
-import 'dart:io';
-
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
-import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'firebase_options.dart';
+
+// 通知インスタンスの生成
+final FlutterLocalNotificationsPlugin flnp = FlutterLocalNotificationsPlugin();
+
+//フォアグラウンドでメッセージを受け取った時のイベント(トップレベルに定義)
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  RemoteNotification? notification = message.notification;
+  flnp.initialize(const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher')));
+
+  if (notification == null) {
+    return;
+  }
+  // 通知
+  flnp.show(
+      notification.hashCode,
+      "${notification.title}:バックグラウンド",
+      notification.body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'channel_id',
+          'channel_name',
+        ),
+      ));
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(const MyApp());
 }
 
@@ -60,68 +83,43 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Text? _text;
-  Image? _image;
+  String _token = "";
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
-  // OCRを行う
-  Future<void> _ocr() async {
-    final pickerFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickerFile == null) {
-      return;
-    }
-    final InputImage imageFile = InputImage.fromFilePath(pickerFile.path);
-    final textRecognizer =
-        TextRecognizer(script: TextRecognitionScript.japanese);
-    final RecognizedText recognizedText =
-        await textRecognizer.processImage(imageFile);
-    String text = recognizedText.text;
-    /*
-    for (TextBlock block in recognizedText.blocks) {
-      // ブロック単位で取得したい情報がある場合はここに記載
-      for (TextLine line in block.lines) {
-        // ライン単位で取得したい情報がある場合はここに記載
+  @override
+  void initState() {
+    super.initState();
+
+    // アプリ初期化時に画面にtokenを表示
+    _firebaseMessaging.getToken().then((String? token) {
+      setState(() {
+        _token = token!;
+      });
+      // コピーしやすいようにコンソールに出すためにprint
+      print(token);
+    });
+
+    //フォアグラウンドでメッセージを受け取った時のイベント
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      flnp.initialize(const InitializationSettings(
+          android: AndroidInitializationSettings('@mipmap/ic_launcher')));
+
+      if (notification == null) {
+        return;
       }
-    }
-    */
-
-    // 画面に反映
-    setState(() {
-      _text = Text(text);
-      _image = Image.file(File(pickerFile.path));
+      // 通知
+      flnp.show(
+          notification.hashCode,
+          "${notification.title}:フォアグラウンド",
+          notification.body,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'channel_id',
+              'channel_name',
+            ),
+          ));
     });
-
-    // リソースの開放
-    textRecognizer.close();
-  }
-
-  // ラベリングを行う
-  Future<void> _labeling() async {
-    final pickerFile =
-        await ImagePicker().pickImage(source: ImageSource.camera);
-    if (pickerFile == null) {
-      return;
-    }
-    final InputImage imageFile = InputImage.fromFilePath(pickerFile.path);
-    final ImageLabelerOptions options =
-        ImageLabelerOptions(confidenceThreshold: 0.7);
-    final imageLabeler = ImageLabeler(options: options);
-    final List<ImageLabel> labels = await imageLabeler.processImage(imageFile);
-
-    String text = "";
-    for (ImageLabel label in labels) {
-      text +=
-          "${label.label} (${(label.confidence * 100).toStringAsFixed(0)}%)\n";
-    }
-
-    // 画面に反映
-    setState(() {
-      _text = Text(text);
-      _image = Image.file(File(pickerFile.path));
-    });
-
-    // リソースの開放
-    imageLabeler.close();
   }
 
   @override
@@ -131,20 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(widget.title),
         ),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              if (_text != null) _text!,
-              if (_image != null) SafeArea(child: _image!),
-            ],
-          ),
-        ),
-        floatingActionButton:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-          FloatingActionButton(
-              onPressed: _ocr, child: const Icon(Icons.photo_album)),
-          FloatingActionButton(
-              onPressed: _labeling, child: const Icon(Icons.photo_camera))
-        ]));
+          child: Text(_token.substring(0, 10)),
+        ));
   }
 }
