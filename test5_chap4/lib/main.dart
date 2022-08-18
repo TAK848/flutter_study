@@ -1,19 +1,41 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'firebase_options.dart';
+
+// 通知インスタンスの生成
+final FlutterLocalNotificationsPlugin flnp = FlutterLocalNotificationsPlugin();
+
+//フォアグラウンドでメッセージを受け取った時のイベント(トップレベルに定義)
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  RemoteNotification? notification = message.notification;
+  flnp.initialize(const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher')));
+
+  if (notification == null) {
+    return;
+  }
+  // 通知
+  flnp.show(
+      notification.hashCode,
+      "${notification.title}:バックグラウンド",
+      notification.body,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'channel_id',
+          'channel_name',
+        ),
+      ));
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(const MyApp());
 }
 
@@ -61,52 +83,43 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Image? _img;
-  Text? _text;
+  String _token = "";
+  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
 
-  // ダウンロード処理
-  Future<void> _download() async {
-    // ファイルのダウンロード
-    FirebaseStorage storage = FirebaseStorage.instance;
-    Reference imageRef = storage.ref().child("DL").child("flutter.png");
-    String imageUrl = await imageRef.getDownloadURL();
-    Reference textRef = storage.ref("DL/hello.txt");
-    var data = await textRef.getData();
+  @override
+  void initState() {
+    super.initState();
 
-    // 画面に反映
-    setState(() {
-      _img = Image.network(imageUrl);
-      _text = Text(ascii.decode(data!));
+    // アプリ初期化時に画面にtokenを表示
+    _firebaseMessaging.getToken().then((String? token) {
+      setState(() {
+        _token = token!;
+      });
+      // コピーしやすいようにコンソールに出すためにprint
+      print(token);
     });
 
-    // ローカルにもファイルを書き込み
-    Directory appDocDir = await getApplicationDocumentsDirectory();
-    File downloadToFile = File("${appDocDir.path}/download-logo.png");
-    try {
-      await imageRef.writeToFile(downloadToFile);
-    } catch (e) {
-      print(e);
-    }
-  }
+    //フォアグラウンドでメッセージを受け取った時のイベント
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      flnp.initialize(const InitializationSettings(
+          android: AndroidInitializationSettings('@mipmap/ic_launcher')));
 
-  // アップロード処理
-  void _upload() async {
-    // imagePickerで画像を選択する
-    final pickerFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickerFile == null) {
-      return;
-    }
-    File file = File(pickerFile.path);
-    FirebaseStorage storage = FirebaseStorage.instance;
-    try {
-      await storage.ref("UL/upload-pic.png").putFile(file);
-      setState(() {
-        _text = const Text("UploadDone");
-      });
-    } catch (e) {
-      print(e);
-    }
+      if (notification == null) {
+        return;
+      }
+      // 通知
+      flnp.show(
+          notification.hashCode,
+          "${notification.title}:フォアグラウンド",
+          notification.body,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'channel_id',
+              'channel_name',
+            ),
+          ));
+    });
   }
 
   @override
@@ -116,24 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
           title: Text(widget.title),
         ),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              if (_img != null) _img!,
-              if (_text != null) _text!,
-            ],
-          ),
-        ),
-        floatingActionButton:
-            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-          FloatingActionButton(
-            onPressed: _download,
-            child: const Icon(Icons.download_outlined),
-          ),
-          FloatingActionButton(
-            onPressed: _upload,
-            child: const Icon(Icons.upload_outlined),
-          ),
-        ]));
+          child: Text(_token.substring(0, 10)),
+        ));
   }
 }
