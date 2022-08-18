@@ -1,11 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 
 import 'firebase_options.dart';
 
@@ -61,52 +60,68 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  Image? _img;
   Text? _text;
+  Image? _image;
 
-  // ダウンロード処理
-  Future<void> _download() async {
-    // ファイルのダウンロード
-    FirebaseStorage storage = FirebaseStorage.instance;
-    Reference imageRef = storage.ref().child("DL").child("flutter.png");
-    String imageUrl = await imageRef.getDownloadURL();
-    Reference textRef = storage.ref("DL/hello.txt");
-    var data = await textRef.getData();
-
-    // 画面に反映
-    setState(() {
-      _img = Image.network(imageUrl);
-      _text = Text(ascii.decode(data!));
-    });
-
-    // ローカルにもファイルを書き込み
-    Directory appDocDir = await getApplicationDocumentsDirectory();
-    File downloadToFile = File("${appDocDir.path}/download-logo.png");
-    try {
-      await imageRef.writeToFile(downloadToFile);
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  // アップロード処理
-  void _upload() async {
-    // imagePickerで画像を選択する
+  // OCRを行う
+  Future<void> _ocr() async {
     final pickerFile =
         await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickerFile == null) {
       return;
     }
-    File file = File(pickerFile.path);
-    FirebaseStorage storage = FirebaseStorage.instance;
-    try {
-      await storage.ref("UL/upload-pic.png").putFile(file);
-      setState(() {
-        _text = const Text("UploadDone");
-      });
-    } catch (e) {
-      print(e);
+    final InputImage imageFile = InputImage.fromFilePath(pickerFile.path);
+    final textRecognizer =
+        TextRecognizer(script: TextRecognitionScript.japanese);
+    final RecognizedText recognizedText =
+        await textRecognizer.processImage(imageFile);
+    String text = recognizedText.text;
+    /*
+    for (TextBlock block in recognizedText.blocks) {
+      // ブロック単位で取得したい情報がある場合はここに記載
+      for (TextLine line in block.lines) {
+        // ライン単位で取得したい情報がある場合はここに記載
+      }
     }
+    */
+
+    // 画面に反映
+    setState(() {
+      _text = Text(text);
+      _image = Image.file(File(pickerFile.path));
+    });
+
+    // リソースの開放
+    textRecognizer.close();
+  }
+
+  // ラベリングを行う
+  Future<void> _labeling() async {
+    final pickerFile =
+        await ImagePicker().pickImage(source: ImageSource.camera);
+    if (pickerFile == null) {
+      return;
+    }
+    final InputImage imageFile = InputImage.fromFilePath(pickerFile.path);
+    final ImageLabelerOptions options =
+        ImageLabelerOptions(confidenceThreshold: 0.7);
+    final imageLabeler = ImageLabeler(options: options);
+    final List<ImageLabel> labels = await imageLabeler.processImage(imageFile);
+
+    String text = "";
+    for (ImageLabel label in labels) {
+      text +=
+          "${label.label} (${(label.confidence * 100).toStringAsFixed(0)}%)\n";
+    }
+
+    // 画面に反映
+    setState(() {
+      _text = Text(text);
+      _image = Image.file(File(pickerFile.path));
+    });
+
+    // リソースの開放
+    imageLabeler.close();
   }
 
   @override
@@ -119,21 +134,17 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              if (_img != null) _img!,
               if (_text != null) _text!,
+              if (_image != null) SafeArea(child: _image!),
             ],
           ),
         ),
         floatingActionButton:
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
           FloatingActionButton(
-            onPressed: _download,
-            child: const Icon(Icons.download_outlined),
-          ),
+              onPressed: _ocr, child: const Icon(Icons.photo_album)),
           FloatingActionButton(
-            onPressed: _upload,
-            child: const Icon(Icons.upload_outlined),
-          ),
+              onPressed: _labeling, child: const Icon(Icons.photo_camera))
         ]));
   }
 }
