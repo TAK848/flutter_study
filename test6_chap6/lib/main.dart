@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:isolate';
+
 import 'package:flutter/material.dart';
 
 void main() {
@@ -47,18 +50,54 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+void childfunc(SendPort sendPort) {
+  int i = 0;
+  // 親にメッセージを送る
+  Timer.periodic(const Duration(seconds: 1), (timer) => {sendPort.send(i++)});
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  void _incrementCounter() {
+  void _incrementCounter() async {
+    var recivePort = ReceivePort();
+    var sendPort = recivePort.sendPort;
+    late Capability capability;
+
+    // 子スレッドからメッセージを受け取る
+    recivePort.listen((message) {
+      // ignore: avoid_print
+      print(message);
+    });
+
+    // Isolate(別スレッド)を作成
+    final childIsolate = await Isolate.spawn(childfunc, sendPort);
+
+    // 一時停止
+    Timer(const Duration(seconds: 5), () {
+      // ignore: avoid_print
+      print("pausing");
+      capability = childIsolate.pause();
+    });
+    // 再開
+    Timer(const Duration(seconds: 10), () {
+      // ignore: avoid_print
+      print("resume");
+      childIsolate.resume(capability);
+    });
+    // 終了
+    Timer(const Duration(seconds: 15), () {
+      // ignore: avoid_print
+      print("kill");
+      recivePort.close();
+      childIsolate.kill();
+    });
+
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
       _counter++;
     });
+    // ignore: avoid_print
+    print("MainIsolateFuncDone");
   }
 
   @override
