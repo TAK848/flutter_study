@@ -47,7 +47,10 @@ class MyHomePage extends StatefulWidget {
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() {
+    print("call createState");
+    return _MyHomePageState();
+  }
 }
 
 void childfunc(SendPort sendPort) {
@@ -59,79 +62,43 @@ void childfunc(SendPort sendPort) {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  void _incrementCounter() async {
-    var recivePort = ReceivePort();
-    var sendPort = recivePort.sendPort;
-    late Capability capability;
-
-    // 子スレッドからメッセージを受け取る
-    recivePort.listen((message) {
-      // ignore: avoid_print
-      print(message);
-    });
-
-    // Isolate(別スレッド)を作成
-    final childIsolate = await Isolate.spawn(childfunc, sendPort);
-
-    // 一時停止
-    Timer(const Duration(seconds: 5), () {
-      // ignore: avoid_print
-      print("pausing");
-      capability = childIsolate.pause();
-    });
-    // 再開
-    Timer(const Duration(seconds: 10), () {
-      // ignore: avoid_print
-      print("resume");
-      childIsolate.resume(capability);
-    });
-    // 終了
-    Timer(const Duration(seconds: 15), () {
-      // ignore: avoid_print
-      print("kill");
-      recivePort.close();
-      childIsolate.kill();
-    });
-
+  void _incrementCounter() {
     setState(() {
+      print("call setState");
       _counter++;
     });
-    // ignore: avoid_print
-    print("MainIsolateFuncDone");
+    nextpage();
+  }
+
+  void nextpage() async {
+    // ダミー画面へ遷移
+    await Navigator.of(context)
+        .pushReplacement(MaterialPageRoute(builder: (context) {
+      return DummyPage();
+    }));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    print("call initState");
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    print("call didChangeDependencies");
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
+    print("call build");
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
@@ -148,7 +115,31 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
+    );
+  }
+
+  @override
+  void deactivate() {
+    super.deactivate();
+    print("call deactivate");
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    print("call dispose");
+  }
+}
+
+class DummyPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("dummy"),
+      ),
+      body: Text("dummy"),
     );
   }
 }
