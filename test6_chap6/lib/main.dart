@@ -56,8 +56,8 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     //2つのStatefulWidgetが準備
     tiles = [
-      const StatefulTile(),
-      const StatefulTile(),
+      StatefulTile(key: UniqueKey()),
+      StatefulTile(key: UniqueKey()),
     ];
   }
 
