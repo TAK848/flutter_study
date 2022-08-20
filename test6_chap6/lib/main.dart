@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'stateful_tile.dart';
+import 'my_inherited_widget.dart';
+import 'my_widget.dart';
 
 void main() {
   runApp(const MyApp());
@@ -50,36 +51,30 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  late List<Widget> tiles;
-  @override
-  void initState() {
-    super.initState();
-    //2つのStatefulWidgetが準備
-    tiles = [
-      StatefulTile(key: UniqueKey()),
-      StatefulTile(key: UniqueKey()),
-    ];
-  }
-
-  // 入れ替え処理
-  void changeTiles() {
+  int _counter = 0;
+  void _incrementCounter() {
     setState(() {
-      tiles.insert(1, tiles.removeAt(0));
+      _counter++;
     });
+    print("count:" + _counter.toString());
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Row(children: tiles),
-      floatingActionButton: FloatingActionButton(
-        onPressed: changeTiles,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
-    );
+    // InheritedWidgetをScaffoldの上位に入れている
+    return MyInheritedWidget(
+        counter: _counter,
+        message: "I am InheritedWidget",
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text(widget.title),
+          ),
+          body: const Center(child: MyWidget()),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _incrementCounter,
+            tooltip: 'Increment',
+            child: const Icon(Icons.add),
+          ),
+        ));
   }
 }
