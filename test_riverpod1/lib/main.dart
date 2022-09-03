@@ -20,10 +20,9 @@ class MyApp extends StatelessWidget {
   }
 }
 
-final futureProvider = FutureProvider((ref) {
-  return Future.delayed(const Duration(seconds: 3), () {
-    // assert(false);
-    return 'Hello Future Riverpod';
+final streamProvider = StreamProvider((ref) {
+  return Stream.periodic(const Duration(milliseconds: 1), (value) {
+    return value++;
   });
 });
 
@@ -32,7 +31,7 @@ class RiverpodSample extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final value = ref.watch(futureProvider);
+    final value = ref.watch(streamProvider);
 
     return Scaffold(
       appBar: AppBar(
