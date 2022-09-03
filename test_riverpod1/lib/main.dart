@@ -20,10 +20,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
-final streamProvider = StreamProvider((ref) {
-  return Stream.periodic(const Duration(milliseconds: 1), (value) {
-    return value++;
-  });
+final stateProvider = StateProvider((ref) {
+  return 0;
 });
 
 class RiverpodSample extends ConsumerWidget {
@@ -31,25 +29,30 @@ class RiverpodSample extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final value = ref.watch(streamProvider);
+    final countStateController = ref.read(stateProvider.notifier);
+    final count = ref.watch(stateProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riverpod Sample'),
       ),
       body: Center(
-        child: value.when(
-            data: (data) {
-              return Text(
-                data.toString(),
-                style: const TextStyle(fontSize: 24),
-              );
-            },
-            error: (error, trace) => Text(
-                  error.toString(),
-                  style: const TextStyle(fontSize: 24),
-                ),
-            loading: () => const CircularProgressIndicator()),
+        child: Text(
+          count.toString(),
+          style: const TextStyle(fontSize: 24),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          countStateController.state++;
+          // countStateController
+          //     .update((state) => state + 1); // <= こちらの記載でも上記と同等の効果
+          countStateController.update((state) {
+            return state *= 2;
+          });
+        },
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
       ),
     );
   }
