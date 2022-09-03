@@ -20,8 +20,17 @@ class MyApp extends StatelessWidget {
   }
 }
 
-final stateProvider = StateProvider((ref) {
-  return 0;
+class Counter extends ChangeNotifier {
+  int counter = 0;
+
+  void increment() {
+    counter++;
+    notifyListeners();
+  }
+}
+
+final counterProvider = ChangeNotifierProvider((ref) {
+  return Counter();
 });
 
 class RiverpodSample extends ConsumerWidget {
@@ -29,8 +38,7 @@ class RiverpodSample extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final countStateController = ref.read(stateProvider.notifier);
-    final count = ref.watch(stateProvider);
+    final value = ref.watch(counterProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -38,20 +46,12 @@ class RiverpodSample extends ConsumerWidget {
       ),
       body: Center(
         child: Text(
-          count.toString(),
+          '${value.toString()} ${value.counter}',
           style: const TextStyle(fontSize: 24),
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          countStateController.state++;
-          // countStateController
-          //     .update((state) => state + 1); // <= こちらの記載でも上記と同等の効果
-          countStateController.update((state) {
-            return state *= 2;
-          });
-        },
-        tooltip: 'Increment',
+        onPressed: value.increment,
         child: const Icon(Icons.add),
       ),
     );
