@@ -20,8 +20,20 @@ class MyApp extends StatelessWidget {
   }
 }
 
-final strProvider = Provider((ref) {
-  return 'Hello Riverpod';
+class CounterNotifier extends StateNotifier<int> {
+  CounterNotifier() : super(0);
+
+  void increment() {
+    state++;
+    // for (int i = 0; i < 1000000000; i++) {
+    //   // state++;
+    // }
+  }
+}
+
+final countNotifierProvider =
+    StateNotifierProvider<CounterNotifier, int>((ref) {
+  return CounterNotifier();
 });
 
 class RiverpodSample extends ConsumerWidget {
@@ -29,7 +41,8 @@ class RiverpodSample extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final value = ref.watch(strProvider);
+    final countStateController = ref.read(countNotifierProvider.notifier);
+    final count = ref.watch(countNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -37,9 +50,16 @@ class RiverpodSample extends ConsumerWidget {
       ),
       body: Center(
         child: Text(
-          value,
+          count.toString(),
           style: const TextStyle(fontSize: 24),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          countStateController.increment();
+        },
+        tooltip: 'Increment',
+        child: const Icon(Icons.add),
       ),
     );
   }
