@@ -20,20 +20,11 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class CounterNotifier extends StateNotifier<int> {
-  CounterNotifier() : super(0);
-
-  void increment() {
-    state++;
-    // for (int i = 0; i < 1000000000; i++) {
-    //   // state++;
-    // }
-  }
-}
-
-final countNotifierProvider =
-    StateNotifierProvider<CounterNotifier, int>((ref) {
-  return CounterNotifier();
+final futureProvider = FutureProvider((ref) {
+  return Future.delayed(const Duration(seconds: 3), () {
+    // assert(false);
+    return 'Hello Future Riverpod';
+  });
 });
 
 class RiverpodSample extends ConsumerWidget {
@@ -41,25 +32,25 @@ class RiverpodSample extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final countStateController = ref.read(countNotifierProvider.notifier);
-    final count = ref.watch(countNotifierProvider);
+    final value = ref.watch(futureProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riverpod Sample'),
       ),
       body: Center(
-        child: Text(
-          count.toString(),
-          style: const TextStyle(fontSize: 24),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          countStateController.increment();
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: value.when(
+            data: (data) {
+              return Text(
+                data.toString(),
+                style: const TextStyle(fontSize: 24),
+              );
+            },
+            error: (error, trace) => Text(
+                  error.toString(),
+                  style: const TextStyle(fontSize: 24),
+                ),
+            loading: () => const CircularProgressIndicator()),
       ),
     );
   }
