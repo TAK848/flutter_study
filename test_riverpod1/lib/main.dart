@@ -20,11 +20,17 @@ class MyApp extends StatelessWidget {
   }
 }
 
+final dateProvider = Provider((ref) {
+  return DateTime.now();
+});
+
 class RiverpodSample extends ConsumerWidget {
   const RiverpodSample({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final date = ref.watch(dateProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riverpod Sample'),
@@ -33,58 +39,22 @@ class RiverpodSample extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'First Page',
-              style: TextStyle(fontSize: 24),
+            Text(
+              date.toString(),
+              style: const TextStyle(fontSize: 24),
             ),
-            const SizedBox(height: 50),
+            const SizedBox(width: 20),
             ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const NextPage()));
-                },
-                child: const Text(
-                  'Transition to the next page',
-                  style: TextStyle(fontSize: 24),
-                )),
+              onPressed: () {
+                ref.refresh(dateProvider);
+              },
+              child: const Text(
+                "Refresh",
+                style: TextStyle(fontSize: 24),
+              ),
+            ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-final futureProvider = FutureProvider.autoDispose((ref) async {
-  return await Future.delayed(const Duration(seconds: 3), () {
-    ref.maintainState = true;
-    return 'Hello Future Riverpod';
-  });
-});
-
-class NextPage extends ConsumerWidget {
-  const NextPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final value = ref.watch(futureProvider);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Riverpod Sample'),
-      ),
-      body: Center(
-        child: value.when(
-            data: (data) {
-              return Text(
-                data.toString(),
-                style: const TextStyle(fontSize: 24),
-              );
-            },
-            error: (error, trace) => Text(
-                  error.toString(),
-                  style: const TextStyle(fontSize: 24),
-                ),
-            loading: () => const CircularProgressIndicator()),
       ),
     );
   }
