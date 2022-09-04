@@ -54,7 +54,7 @@ class RiverpodSample extends ConsumerWidget {
   }
 }
 
-final stateProvider = StateProvider((ref) {
+final stateProvider = StateProvider.autoDispose((ref) {
   return 0;
 });
 
