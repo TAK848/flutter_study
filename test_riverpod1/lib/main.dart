@@ -20,39 +20,44 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class Counter extends ChangeNotifier {
-  int counter = 0;
-
-  void increment() {
-    counter++;
-    notifyListeners();
-  }
-}
-
-final counterProvider = ChangeNotifierProvider((ref) {
-  return Counter();
+final stateProvider = StateProvider((ref) {
+  return 0;
 });
 
-class RiverpodSample extends ConsumerWidget {
+class RiverpodSample extends StatelessWidget {
   const RiverpodSample({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final value = ref.watch(counterProvider);
-
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riverpod Sample'),
       ),
       body: Center(
-        child: Text(
-          '${value.toString()} ${value.counter}',
-          style: const TextStyle(fontSize: 24),
+        child: Consumer(
+          builder: (context, ref, child) {
+            final count = ref.watch(stateProvider);
+            final countController = ref.watch(stateProvider.notifier);
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  count.toString(),
+                  style: const TextStyle(fontSize: 24),
+                ),
+                const SizedBox(height: 50),
+                ElevatedButton(
+                  onPressed: () {
+                    countController.state *= 2;
+                  },
+                  child: const Text('Increment'),
+                ),
+                child ?? Container()
+              ],
+            );
+          },
+          child: const Text('Counter'),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: value.increment,
-        child: const Icon(Icons.add),
       ),
     );
   }
