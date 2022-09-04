@@ -54,8 +54,11 @@ class RiverpodSample extends ConsumerWidget {
   }
 }
 
-final stateProvider = StateProvider.autoDispose((ref) {
-  return 0;
+final futureProvider = FutureProvider.autoDispose((ref) async {
+  return await Future.delayed(const Duration(seconds: 3), () {
+    ref.maintainState = true;
+    return 'Hello Future Riverpod';
+  });
 });
 
 class NextPage extends ConsumerWidget {
@@ -63,35 +66,25 @@ class NextPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final countStateController = ref.read(stateProvider.notifier);
-    final count = ref.watch(stateProvider);
+    final value = ref.watch(futureProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Riverpod Sample'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Next Page',
-              style: TextStyle(fontSize: 24),
-            ),
-            const SizedBox(height: 50),
-            Text(
-              count.toString(),
-              style: const TextStyle(fontSize: 24),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          countStateController.state++;
-        },
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: value.when(
+            data: (data) {
+              return Text(
+                data.toString(),
+                style: const TextStyle(fontSize: 24),
+              );
+            },
+            error: (error, trace) => Text(
+                  error.toString(),
+                  style: const TextStyle(fontSize: 24),
+                ),
+            loading: () => const CircularProgressIndicator()),
       ),
     );
   }
