@@ -31,6 +31,7 @@ class AlertSample extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final count = ref.watch(countStateProvider);
+    final countStateController = ref.read(countStateProvider.notifier);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Alert Sample"),
@@ -40,20 +41,15 @@ class AlertSample extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).restorablePush(_dialogBuilder);
+          showCupertinoDialog(
+            context: context,
+            builder: (context) {
+              return const MyCupertinoDialog();
+            },
+          );
         },
         child: const Icon(Icons.add),
       ),
-    );
-  }
-
-  static Route<Object?> _dialogBuilder(
-      BuildContext context, Object? arguments) {
-    return CupertinoDialogRoute<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return const MyCupertinoDialog();
-      },
     );
   }
 }
@@ -63,7 +59,6 @@ class MyCupertinoDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final count = ref.watch(countStateProvider);
     final countStateController = ref.read(countStateProvider.notifier);
     return CupertinoAlertDialog(
       title: const Text("Alert"),
