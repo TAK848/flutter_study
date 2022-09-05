@@ -41,33 +41,49 @@ class AlertSample extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showCupertinoDialog(
-            context: context,
-            builder: (context) {
-              return CupertinoAlertDialog(
-                title: const Text("Alert"),
-                content: const Text("This is an alert."),
-                actions: [
-                  CupertinoDialogAction(
-                    onPressed: () {
-                      countStateController.state++;
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Yes'),
-                  ),
-                  CupertinoDialogAction(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('No'),
-                  ),
-                ],
-              );
-            },
-          );
+          Navigator.of(context).restorablePush(_dialogBuilder);
         },
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  static Route<Object?> _dialogBuilder(
+      BuildContext context, Object? arguments) {
+    return CupertinoDialogRoute<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return const MyCupertinoDialog();
+      },
+    );
+  }
+}
+
+class MyCupertinoDialog extends ConsumerWidget {
+  const MyCupertinoDialog({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // final count = ref.watch(countStateProvider);
+    final countStateController = ref.read(countStateProvider.notifier);
+    return CupertinoAlertDialog(
+      title: const Text("Alert"),
+      content: const Text("This is an alert."),
+      actions: [
+        CupertinoDialogAction(
+          onPressed: () {
+            countStateController.state++;
+            Navigator.pop(context);
+          },
+          child: const Text('Yes'),
+        ),
+        CupertinoDialogAction(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text('No'),
+        ),
+      ],
     );
   }
 }
