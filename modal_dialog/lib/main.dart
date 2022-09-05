@@ -31,7 +31,6 @@ class AlertSample extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final count = ref.watch(countStateProvider);
-    final countStateController = ref.read(countStateProvider.notifier);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Alert Sample"),
