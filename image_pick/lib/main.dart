@@ -56,22 +56,16 @@ class _MyHomePageState extends State<MyHomePage> {
     print(p.extension(pickedFile.path));
     const ok = ['.jpg', '.jpeg', '.png', '.heic'];
     if (!ok.contains(p.extension(pickedFile.path).toLowerCase())) {
-      throw Exception('not a valid image');
-    } else {
-      print('ok!');
+      final snackBar = SnackBar(
+        content: const Text('対応していない形式です！'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {},
+        ),
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      return;
     }
-    setState(() {
-      _image = pickedFile;
-    });
-
-    final snackBar = SnackBar(
-      content: const Text('ボタンを押しました！'),
-      action: SnackBarAction(
-        label: 'Undo',
-        onPressed: () {},
-      ),
-    );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
     setState(() {
       _image = XFile(pickedFile.path);
     });
